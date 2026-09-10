@@ -677,7 +677,7 @@
                             </select>
                         </div>
                         <div class="form-group" id="grupoIkaslea">
-                            <label>Ikaslearen ID *</label>
+                            <label id="labelIkaslea">Ikaslearen ID *</label>
                             <input type="text" id="registroIkaslea" placeholder="Adib: IK-0234 (EZ izen-abizenik)">
                         </div>
                         <div class="form-group">
@@ -1849,15 +1849,16 @@
 
         const datosEginkizunak = {
             "Inklusioa": [
-                "Ebaluazio psikopedagogiko berriak",
+                "Ebaluazio psikopedagogikoak",
                 "Protokoloak",
                 "Txostenak",
-                "Eskolatze proposamen berriak",
+                "Eskolatze proposamenak",
                 "CNE-en kudeaketa",
                 "Jokabide kasuak",
                 "ZIP gelako eginbeharrak",
                 "LIP gelako eginbeharrak",
-                "Etapa aldaketak"
+                "Koordinazio batzarrak",
+                "Eskaerapeko ikastetxeetako eskuhartzeak"
             ],
             "Bizikidetza": ["Jokabide kasuak", "Ikasleen konbibentzia"],
             "Posbentzioa": ["Prebentzio programak"],
@@ -1866,28 +1867,53 @@
 
         // Eginkizun bakoitzaren motak, azpi-motak eta eremuak (Eginkizunak.xlsx-tik)
         const EGINKIZUN_KONFIG = {
-            "Ebaluazio psikopedagogiko berriak": {
+            "Ebaluazio psikopedagogikoak": {
                 ikasleId: true,
                 motak: ["Balidatzea", "Berria", "100.2A", "105 adimen kognitibia", "6. Mailako birrebaluazioa", "Besteak"],
                 motaZehaztu: ["Besteak"]
             },
             "Protokoloak": {
                 ikasleId: true,
-                motak: ["AGH", "AG", "TDL", "IZE", "KSHO"],
+                motak: ["AGH", "AG", "HGN", "IZE", "KSHO"],
                 azpiMotak: ["2. fasetik 3. fasera jarraipena", "3. faseko ebaluazioa"]
             },
             "Txostenak": {
                 ikasleId: true,
                 motak: ["Ebaluazio psikopedagogikoa", "Osatuz programetarako txostena", "Osagarri programetarako txostena"]
             },
-            "Eskolatze proposamen berriak": { ikasleId: true, zehaztu: true },
-            "CNE-en kudeaketa": { ikasleId: true, motak: ["Arlokoa", "Globala"] },
+            "Eskolatze proposamenak": {
+                ikasleId: true,
+                motak: ["Berriak", "Hezkuntza bereziko ibilbideak"],
+                azpiMotak: { "Hezkuntza bereziko ibilbideak": ["LIP", "ZIP", "Ikastetxe espezifikoa", "OLH malgua"] }
+            },
+            "CNE-en kudeaketa": { ikasleId: true, motak: ["Arlokoa", "Orokorra"] },
             "Jokabide kasuak": { ikasleId: true },
             "ZIP gelako eginbeharrak": { ikasleId: false, zehaztu: true },
             "LIP gelako eginbeharrak": { ikasleId: false, zehaztu: true },
-            "Etapa aldaketak": { ikasleId: true, zehaztu: true }
+            "Koordinazio batzarrak": {
+                ikasleId: "aukerakoa",
+                motak: ["OT/Fisio", "HLE", "Gorren EHI/ZHI/Gorren taldekatze ikastetxeak", "Osatuz", "UTE", "CSM", "Bestelakoak"],
+                motaZehaztu: ["Bestelakoak"]
+            },
+            "Eskaerapeko ikastetxeetako eskuhartzeak": { ikasleId: true, zehaztu: true }
         };
         const EREMU_LEHENETSIAK = { ikasleId: true };
+
+        // Azpi-motak bi eratara defini daitezke: array bat (eginkizun osorako)
+        // edo objektu bat (mota bakoitzak bereak izateko)
+        function azpiMotakLortu(cfg, mota) {
+            if (!cfg || !cfg.azpiMotak) return null;
+            if (Array.isArray(cfg.azpiMotak)) return cfg.azpiMotak;
+            return cfg.azpiMotak[mota] || null;
+        }
+
+        // Ikaslearen IDa: true = derrigorrezkoa, "aukerakoa" = agertu bai, baina hutsik utz daiteke
+        function ikasleEremuaBehar(cfg) {
+            return cfg.ikasleId === true || cfg.ikasleId === "aukerakoa";
+        }
+        function ikasleaDerrigorrezkoaDa(cfg) {
+            return cfg.ikasleId === true;
+        }
 
         // Eginkizuna aldatzean: mota-zerrenda kargatu eta eremuak egokitu
         function updateEremuak() {
@@ -1906,7 +1932,8 @@
 
             document.getElementById('registroAzpiMota').innerHTML = '<option value=""></option>';
             document.getElementById('grupoAzpiMota').style.display = 'none';
-            document.getElementById('grupoIkaslea').style.display = cfg.ikasleId ? '' : 'none';
+            document.getElementById('grupoIkaslea').style.display = ikasleEremuaBehar(cfg) ? '' : 'none';
+            document.getElementById('labelIkaslea').textContent = ikasleaDerrigorrezkoaDa(cfg) ? 'Ikaslearen ID *' : 'Ikaslearen ID';
             actualizarZehaztuEremua();
         }
 
@@ -1917,9 +1944,10 @@
             const mota = document.getElementById('registroMota').value;
 
             const azpiSelect = document.getElementById('registroAzpiMota');
-            if (cfg.azpiMotak && mota) {
+            const azpiMotak = azpiMotakLortu(cfg, mota);
+            if (azpiMotak && mota) {
                 azpiSelect.innerHTML = '<option value="">Aukeratu azpi-mota...</option>' +
-                    cfg.azpiMotak.map(m => `<option value="${m}">${m}</option>`).join('');
+                    azpiMotak.map(m => `<option value="${m}">${m}</option>`).join('');
                 document.getElementById('grupoAzpiMota').style.display = '';
             } else {
                 azpiSelect.innerHTML = '<option value=""></option>';
@@ -2286,6 +2314,7 @@
             const oharrak = document.getElementById('registroOharrak').value;
 
             const cfg = EGINKIZUN_KONFIG[tarea] || EREMU_LEHENETSIAK;
+            const azpiMotakBehar = azpiMotakLortu(cfg, mota);
 
             if (!centro || !tarea || !data) {
                 alert('Eremu guztiak (*) bete behar dira');
@@ -2295,11 +2324,11 @@
                 alert('Mota aukeratu behar da');
                 return;
             }
-            if (cfg.azpiMotak && !azpiMota) {
+            if (azpiMotakBehar && !azpiMota) {
                 alert('Azpi-mota aukeratu behar da');
                 return;
             }
-            if (cfg.ikasleId && !ikaslea) {
+            if (ikasleaDerrigorrezkoaDa(cfg) && !ikaslea) {
                 alert('Ikaslearen ID bete behar da (EZ erabili izen-abizenik, ID kodea bakarrik)');
                 return;
             }
@@ -2314,8 +2343,8 @@
                 centro: datosCentros.find(c => c.codigo === centro)?.nombre || centro,
                 tarea,
                 mota: cfg.motak ? mota : '',
-                azpiMota: cfg.azpiMotak ? azpiMota : '',
-                ikaslea: cfg.ikasleId ? ikaslea : '',
+                azpiMota: azpiMotakBehar ? azpiMota : '',
+                ikaslea: ikasleEremuaBehar(cfg) ? ikaslea : '',
                 zehaztu: zehaztuBeharDa() ? zehaztu : '',
                 data,
                 amaieraData: amaieraData || '',
