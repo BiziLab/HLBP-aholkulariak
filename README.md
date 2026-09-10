@@ -8,13 +8,15 @@
 - Login segurua (kodigo bakoitzari)
 - Dashboard pertsonalizatua (bere ikastetxeak bakarrik)
 - Eskuhartzeen erregistroa, motaren araberako eremuekin:
-  - Ebaluazio psikopedagogikoak (AGH / AEN)
-  - Txosten psikopedagogikoak
-  - Eskolatze proposamen-txostenak
-  - CNE-en kudeaketa
+  - Ebaluazio psikopedagogikoak
+  - Protokoloak (AGH / AG / HGN / IZE / KSHO)
+  - Txostenak
+  - Eskolatze proposamenak (berriak / hezkuntza bereziko ibilbideak: LIP, ZIP, ikastetxe espezifikoa, OLH malgua)
+  - CNE-en kudeaketa (arlokoa / orokorra)
   - Jokabide kasuak
   - ZIP / LIP gelako eginbeharrak
-  - Ikaslearen eskuhartze plana
+  - Koordinazio batzarrak (OT/Fisio, HLE, gorren zerbitzuak, Osatuz, UTE, CSM, bestelakoak)
+  - Eskaerapeko ikastetxeetako eskuhartzeak
 - Egoera: Eginda / Egin gabe
 - Historiala eta zentroetako erregistroa
 
